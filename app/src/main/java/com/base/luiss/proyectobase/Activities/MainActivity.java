@@ -1,10 +1,13 @@
 package com.base.luiss.proyectobase.Activities;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,14 +18,17 @@ import com.base.luiss.proyectobase.datos.ControlSQLiteOpenHelper;
 import com.base.luiss.proyectobase.modelo.persona;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
 
+    private static final String TAG = "ActividadPrincipal";
     EditText txtNombre,txtApellido;
     Button btnGuardar, btnMostrar;
     general gn;
+    String sStatus;
+    CatObtenerClima catObtenerClima;
+    //AsyncCallObtenerStatus ac;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
                     String sApellido = txtApellido.getText().toString();
                     if(insertar(sNombre, sApellido)){
                         //Realizar alguna otra operación
+                        catObtenerClima = new CatObtenerClima();
+                        catObtenerClima.execute();
                     }
                 }
                 else{
@@ -168,6 +176,49 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return  bRespuesta;
+    }
+
+    private class CatObtenerClima extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Log.i(TAG, "doInBackground");
+
+            String sUrl = "http://www.webservicex.net/globalweather.asmx";
+            String sNameSpace = "http://www.webserviceX.NET";
+            String sMetodo = "GetWeather";
+
+            sStatus = gn.getDatoWebService(sUrl,sNameSpace,sMetodo);
+
+
+            sUrl = "http://www.webservicex.net/globalweather.asmx";
+            sNameSpace = "http://www.webserviceX.NET";
+            sMetodo = "GetCitiesByCountry";
+
+            sStatus = gn.getDatoWebService2(sUrl,sNameSpace,sMetodo);
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            Log.i(TAG, "onPostExecute");
+            if ( !sStatus.equals("")) {
+                //Quizas aquí se haga algun llamado a una funcion para guardar en BD
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Log.i(TAG, "onPreExecute");
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            Log.i(TAG, "onProgressUpdate");
+        }
+
     }
 
 
